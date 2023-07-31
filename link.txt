@@ -1,0 +1,17 @@
+https://machinelearningmastery.com/building-a-regression-model-in-pytorch/
+
+https://gist.github.com/conormm/5b26a08029b900520bcd6fcd1f5712a0
+
+https://scholar.google.com/scholar?hl=en&as_sdt=0%2C5&q=missing+pixel+image+restoration&btnG=
+
+https://arxiv.org/pdf/1612.01380v3.pdf
+
+https://openaccess.thecvf.com/content_ICCV_2017/papers/Gao_On-Demand_Learning_for_ICCV_2017_paper.pdf
+
+https://sci-hub.st/10.23919/mva.2017.7986849
+
+https://github.com/rhgao/on-demand-learning/blob/master/pixelInterpolation/train.lua
+
+https://openaccess.thecvf.com/content/CVPR2022/papers/Zamir_Restormer_Efficient_Transformer_for_High-Resolution_Image_Restoration_CVPR_2022_paper.pdf
+
+
