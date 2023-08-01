@@ -7,9 +7,11 @@ class OriginalModel(nn.Module):
     def __init__(self):
         super(OriginalModel, self).__init__()
 
-        self.fc = nn.Sequential(nn.Linear(60, 120), nn.ReLU(),
-                                nn.Linear(120, 60), nn.ReLU(),
-                                nn.Linear(60, 4), nn.ReLU(),)
+        self.fc = nn.Sequential(nn.Linear(60, 256), nn.SiLU(),
+                                nn.Linear(256, 512), nn.SiLU(),
+                                nn.Linear(512, 256), nn.SiLU(),
+                                nn.Linear(256, 60), nn.SiLU(),
+                                nn.Linear(60, 4), nn.SiLU())
     
     def forward(self, x):
         out = self.fc(x)
@@ -20,12 +22,18 @@ class ConvModel1(nn.Module):
     def __init__(self):
         super(ConvModel1, self).__init__()
 
-        self.convnet = nn.Sequential(nn.Conv2d(1, 32, 2), nn.PReLU(),
-                                     nn.Conv2d(32, 64, 2), nn.PReLU(),
-                                     nn.AvgPool2d(2),
-                                     nn.Conv2d(64, 128, 3), nn.PReLU())
+        self.convnet = nn.Sequential(nn.Conv2d(1, 32, 2), 
+                                     nn.BatchNorm2d(num_features=32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU(),
+                                     nn.Conv2d(32, 64, 2),
+                                     nn.BatchNorm2d(num_features=64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU(),
+                                     nn.AvgPool2d(2, stride=(1, 1)),
+                                     nn.Conv2d(64, 128, 3),
+                                     nn.BatchNorm2d(num_features=128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU())
         
-        self.fc = self.fc = nn.Sequential(nn.Linear(128, 512),
+        self.fc = self.fc = nn.Sequential(nn.Linear(1152, 512),
                                 nn.SiLU(),
                                 nn.Linear(512, 256),
                                 nn.SiLU(),
