@@ -82,6 +82,23 @@ class PrepareDataset:
                                    [0., 0.]])
         return X / 255., y / 255.
     
+    def create_dataset_ircnn(self, sample_size):
+        i=0
+        X = np.zeros((64 * sample_size, 32, 32))
+        y = np.zeros((64 * sample_size, 32, 32))
+        for img_names in tqdm(self.img_fnames[:sample_size]):
+            dir_name = img_names[:9]
+            image = self._preprocess_image(join(self.img_path + dir_name, img_names))
+            missing_pixel_image = self._create_missing_pixel_img(image)
+            # tiled_image = self._reshape_split(image)
+            X[i*64:(i+1)*64, :, :] = self._reshape_split(missing_pixel_image)
+            y[i*64:(i+1)*64, :, :] = self._reshape_split(image)
+            i += 1
+        # y = X.copy()
+        # X[:, 3:5, 3:5] = np.array([[0., 0.],
+        #                            [0., 0.]])
+        return X / 255., y / 255.
+    
     def _reshape_split(self, img):
         if img.ndim == 2:
             img_height, img_width = img.shape

@@ -40,6 +40,23 @@ class ConvModel1(nn.Module):
         output = self.fc(output)
         return output
     
+class IRCNN(nn.Module):
+    def __init__(self):
+        super(IRCNN, self).__init__()
+
+        self.convnet = nn.Sequential(nn.Conv2d(1, 64, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(64, 64, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(64, 48, (1, 1), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(48, 32, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(32, 32, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(32, 1, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     )
+        
+    
+    def forward(self, x):
+        output = self.convnet(x)
+        return output
+    
 
 class ConvModel2(nn.Module):
     def __init__(self):
