@@ -25,7 +25,7 @@ To run the program for image restoration first you need to
 
     ```bash
     git clone https://github.com/blacfli/image_restoration.git
-    cd 
+    cd image_restoration
     ```
 
 2. Install packages
