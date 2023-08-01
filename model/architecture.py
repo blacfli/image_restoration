@@ -7,11 +7,9 @@ class OriginalModel(nn.Module):
     def __init__(self):
         super(OriginalModel, self).__init__()
 
-        self.fc = nn.Sequential(nn.Linear(60, 256), nn.SiLU(),
-                                nn.Linear(256, 512), nn.SiLU(),
-                                nn.Linear(512, 256), nn.SiLU(),
-                                nn.Linear(256, 60), nn.SiLU(),
-                                nn.Linear(60, 4), nn.SiLU())
+        self.fc = nn.Sequential(nn.Linear(60, 120), nn.ReLU(),
+                                nn.Linear(120, 60), nn.ReLU(),
+                                nn.Linear(60, 4), nn.ReLU(),)
     
     def forward(self, x):
         out = self.fc(x)
