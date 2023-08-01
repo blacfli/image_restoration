@@ -7,7 +7,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 class PrepareDataset:
-    def __init__(self, img_path, save_path, block_size, size = (256, 256)) -> None:
+    def __init__(self, img_path, test_path, save_path, block_size, size = (256, 256)) -> None:
         self.img_path = img_path
         self.save_path = save_path
         self.size = size
@@ -16,6 +16,8 @@ class PrepareDataset:
         directories = next(os.walk(img_path), (None, None, []))[1]
         for directory in tqdm(directories):
             self.img_fnames.extend(next(os.walk(img_path + directory), (None, None, []))[2])
+        self.test_path = test_path
+        self.img_test_fnames = next(os.walk(test_path), (None, None, []))[2]
         
 
     def create_dataset_autoencoder(self):
@@ -32,16 +34,31 @@ class PrepareDataset:
     def parse_image_2d(self, img):
         pass
 
-    def test_model_tf(self, model):
-        image = self._preprocess_image('./dataset/original_image/balloon.bmp')
-        tiled_image = self._reshape_split(image)
-        X = tiled_image.copy()
+    def create_test_original(self):
+        i=0
+        X = np.zeros((1024 * len(self.img_test_fnames), 8, 8))
+        for img_names in tqdm(self.img_test_fnames):
+            image = self._preprocess_image(join(self.test_path, img_names))
+            tiled_image = self._reshape_split(image)
+            X[i*1024:(i+1)*1024, :, :] = tiled_image
+            i += 1
+        y = X.copy()[:, 3:5, 3:5].reshape(1024 * len(self.img_test_fnames), -1)
         X[:, 3:5, 3:5] = np.array([[None, None],
                                    [None, None]])
-        test = X[~np.isnan(X)].reshape(-1, 60) / 255.
-        prediction_result = model.predict(test).reshape(-1, 2, 2) * 255.
-        X[:, 3:5, 3:5] = prediction_result
-        return X.reshape(32, 32, 8, 8).swapaxes(1, 2).reshape(256, 256)
+        return X[~np.isnan(X)].reshape(-1, 60) / 255., y / 255.
+
+    def create_test_2d(self):
+        i=0
+        X = np.zeros((1024 * len(self.img_test_fnames), 8, 8))
+        for img_names in tqdm(self.img_test_fnames):
+            image = self._preprocess_image(join(self.test_path, img_names))
+            tiled_image = self._reshape_split(image)
+            X[i*1024:(i+1)*1024, :, :] = tiled_image
+            i += 1
+        y = X.copy()[:, 3:5, 3:5].reshape(1024 * len(self.img_test_fnames), -1)
+        X[:, 3:5, 3:5] = np.array([[0., 0.],
+                                   [0., 0.]])
+        return X / 255., y / 255.
     
     def test_model_pytorch(self, model):
         image = self._preprocess_image('./dataset/original_image/balloon.bmp')

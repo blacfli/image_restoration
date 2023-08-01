@@ -22,10 +22,16 @@ class ConvModel1(nn.Module):
     def __init__(self):
         super(ConvModel1, self).__init__()
 
-        self.convnet = nn.Sequential(nn.Conv2d(1, 32, 2), nn.PReLU(),
-                                     nn.Conv2d(32, 64, 2), nn.PReLU(),
+        self.convnet = nn.Sequential(nn.Conv2d(1, 32, 2), 
+                                     nn.BatchNorm2d(num_features=32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU(),
+                                     nn.Conv2d(32, 64, 2),
+                                     nn.BatchNorm2d(num_features=64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU(),
                                      nn.AvgPool2d(2),
-                                     nn.Conv2d(64, 128, 3), nn.PReLU())
+                                     nn.Conv2d(64, 128, 3),
+                                     nn.BatchNorm2d(num_features=128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU())
         
         self.fc = self.fc = nn.Sequential(nn.Linear(128, 512),
                                 nn.SiLU(),
