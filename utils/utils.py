@@ -7,7 +7,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 class PrepareDataset:
-    def __init__(self, img_path, save_path, block_size, size = (256, 256)) -> None:
+    def __init__(self, img_path, test_path, save_path, block_size, size = (256, 256)) -> None:
         self.img_path = img_path
         self.save_path = save_path
         self.size = size
@@ -16,6 +16,8 @@ class PrepareDataset:
         directories = next(os.walk(img_path), (None, None, []))[1]
         for directory in tqdm(directories):
             self.img_fnames.extend(next(os.walk(img_path + directory), (None, None, []))[2])
+        self.test_path = test_path
+        self.img_test_fnames = next(os.walk(test_path), (None, None, []))[2]
         
 
     def create_dataset_autoencoder(self):
@@ -32,16 +34,48 @@ class PrepareDataset:
     def parse_image_2d(self, img):
         pass
 
-    def test_model_tf(self, model):
-        image = self._preprocess_image('./dataset/original_image/balloon.bmp')
-        tiled_image = self._reshape_split(image)
-        X = tiled_image.copy()
+    def create_test_original(self):
+        i=0
+        X = np.zeros((1024 * len(self.img_test_fnames), 8, 8))
+        for img_names in tqdm(self.img_test_fnames):
+            image = self._preprocess_image(join(self.test_path, img_names))
+            tiled_image = self._reshape_split(image)
+            X[i*1024:(i+1)*1024, :, :] = tiled_image
+            i += 1
+        y = X.copy()[:, 3:5, 3:5].reshape(1024 * len(self.img_test_fnames), -1)
         X[:, 3:5, 3:5] = np.array([[None, None],
                                    [None, None]])
-        test = X[~np.isnan(X)].reshape(-1, 60) / 255.
-        prediction_result = model.predict(test).reshape(-1, 2, 2) * 255.
-        X[:, 3:5, 3:5] = prediction_result
-        return X.reshape(32, 32, 8, 8).swapaxes(1, 2).reshape(256, 256)
+        return X[~np.isnan(X)].reshape(-1, 60) / 255., y / 255.
+
+    def create_test_2d(self):
+        i=0
+        X = np.zeros((1024 * len(self.img_test_fnames), 8, 8))
+        for img_names in tqdm(self.img_test_fnames):
+            image = self._preprocess_image(join(self.test_path, img_names))
+            tiled_image = self._reshape_split(image)
+            X[i*1024:(i+1)*1024, :, :] = tiled_image
+            i += 1
+        y = X.copy()[:, 3:5, 3:5].reshape(1024 * len(self.img_test_fnames), -1)
+        X[:, 3:5, 3:5] = np.array([[0., 0.],
+                                   [0., 0.]])
+        return X / 255., y / 255.
+    
+    def create_test_ircnn(self):
+        i=0
+        X = np.zeros((64 * len(self.img_test_fnames), 32, 32))
+        y = np.zeros((64 * len(self.img_test_fnames), 32, 32))
+        for img_names in tqdm(self.img_test_fnames):
+            image = self._preprocess_image(join(self.test_path, img_names))
+            missing_pixel_image = self._create_missing_pixel_img(image)
+            # tiled_image = self._reshape_split(image)
+            X[i*64:(i+1)*64, :, :] = self._reshape_split(missing_pixel_image)
+            y[i*64:(i+1)*64, :, :] = self._reshape_split(image)
+            i += 1
+        # y = X.copy()
+        # X[:, 3:5, 3:5] = np.array([[0., 0.],
+        #                            [0., 0.]])
+        return X / 255., y / 255.
+    
     
     def test_model_pytorch(self, model):
         image = self._preprocess_image('./dataset/original_image/balloon.bmp')
@@ -140,6 +174,45 @@ def imshow(img, cmap=None, vmin=0, vmax=255, frameon=False, dpi=72):
 
 def compare_img(img1, img2):
     pass
+
+
+'''
+model.eval()
+image = data._preprocess_image('./dataset/original_image/balloon.bmp')
+tiled_image = data._reshape_split(image)
+X_test = tiled_image.copy()
+X_test[:, 3:5, 3:5] = np.array([[None, None],
+                            [None, None]])
+test = X_test[~np.isnan(X_test)].reshape(-1, 60) / 255.
+prediction_result = model(torch.tensor(test, dtype=torch.float64).to(device)).detach().cpu().numpy()
+prediction_result = prediction_result.reshape(-1, 2, 2) * 255.
+X_test[:, 3:5, 3:5] = prediction_result
+pred = X_test.reshape(32, 32, 8, 8).swapaxes(1, 2).reshape(256, 256)
+# a = model(torch.tensor(X[:1024], dtype=torch.float32).to(device)).detach().cpu().numpy()
+
+
+model.eval()
+image = data._preprocess_image('./dataset/original_image/' + 'balloon.bmp')
+tiled_image = data._reshape_split(image)
+X_test = tiled_image.copy()
+X_test[:, 3:5, 3:5] = np.array([[0., 0.],
+                            [0., 0.]])
+test = X_test / 255.
+prediction_result = model(torch.tensor(test, dtype=torch.float64).to(device).unsqueeze(1)).detach().cpu().numpy()
+prediction_result = prediction_result.reshape(-1, 2, 2) * 255.
+X_test[:, 3:5, 3:5] = prediction_result
+pred = X_test.reshape(32, 32, 8, 8).swapaxes(1, 2).reshape(256, 256)
+
+
+model.eval()
+image = data._preprocess_image('./dataset/original_image/' + test_image_name)
+missing_pixel_image = data._create_missing_pixel_img(image)
+tiled_image = data._reshape_split(missing_pixel_image)
+test = tiled_image / 255.
+prediction_result = model(torch.tensor(test, dtype=torch.float64).to(device).unsqueeze(1)).detach().cpu().numpy()
+# prediction_result.shape
+pred = prediction_result.reshape(8, 8, 32, 32).swapaxes(1, 2).reshape(256, 256) * 255.
+'''
 
 
 # def is_missing_pixel(r, c):
