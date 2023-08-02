@@ -14,8 +14,8 @@ To get dataset please download from the imagenet website https://www.image-net.o
 
 The file structure for the dataset will be as follows:
 - dataset
-    - original_image -> for testing dataset
-    - training_image -> for training dataset
+-------- original_image -> for testing dataset
+-------- training_image -> for training dataset
 
 ### Installation
 
@@ -36,4 +36,10 @@ To run the program for image restoration first you need to
     or
    ```bash
    pip install -r requirement.txt
+
+## To train the model 
+
+1. Open the missing_pixel.ipynb
+
+2. Do not forget to read the instruction before running it
 
