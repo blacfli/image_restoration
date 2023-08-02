@@ -60,6 +60,23 @@ class PrepareDataset:
                                    [0., 0.]])
         return X / 255., y / 255.
     
+    def create_test_ircnn(self):
+        i=0
+        X = np.zeros((64 * len(self.img_test_fnames), 32, 32))
+        y = np.zeros((64 * len(self.img_test_fnames), 32, 32))
+        for img_names in tqdm(self.img_test_fnames):
+            image = self._preprocess_image(join(self.test_path, img_names))
+            missing_pixel_image = self._create_missing_pixel_img(image)
+            # tiled_image = self._reshape_split(image)
+            X[i*64:(i+1)*64, :, :] = self._reshape_split(missing_pixel_image)
+            y[i*64:(i+1)*64, :, :] = self._reshape_split(image)
+            i += 1
+        # y = X.copy()
+        # X[:, 3:5, 3:5] = np.array([[0., 0.],
+        #                            [0., 0.]])
+        return X / 255., y / 255.
+    
+    
     def test_model_pytorch(self, model):
         image = self._preprocess_image('./dataset/original_image/balloon.bmp')
         tiled_image = self._reshape_split(image)

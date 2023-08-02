@@ -7,11 +7,9 @@ class OriginalModel(nn.Module):
     def __init__(self):
         super(OriginalModel, self).__init__()
 
-        self.fc = nn.Sequential(nn.Linear(60, 256), nn.SiLU(),
-                                nn.Linear(256, 512), nn.SiLU(),
-                                nn.Linear(512, 256), nn.SiLU(),
-                                nn.Linear(256, 60), nn.SiLU(),
-                                nn.Linear(60, 4), nn.SiLU())
+        self.fc = nn.Sequential(nn.Linear(60, 120), nn.ReLU(),
+                                nn.Linear(120, 60), nn.ReLU(),
+                                nn.Linear(60, 4), nn.ReLU())
     
     def forward(self, x):
         out = self.fc(x)
@@ -46,23 +44,6 @@ class ConvModel1(nn.Module):
         output = self.fc(output)
         return output
     
-class IRCNN(nn.Module):
-    def __init__(self):
-        super(IRCNN, self).__init__()
-
-        self.convnet = nn.Sequential(nn.Conv2d(1, 64, (5, 5), padding='same'), nn.LeakyReLU(),
-                                     nn.Conv2d(64, 64, (5, 5), padding='same'), nn.LeakyReLU(),
-                                     nn.Conv2d(64, 48, (1, 1), padding='same'), nn.LeakyReLU(),
-                                     nn.Conv2d(48, 32, (5, 5), padding='same'), nn.LeakyReLU(),
-                                     nn.Conv2d(32, 32, (5, 5), padding='same'), nn.LeakyReLU(),
-                                     nn.Conv2d(32, 1, (5, 5), padding='same'), nn.LeakyReLU(),
-                                     )
-        
-    
-    def forward(self, x):
-        output = self.convnet(x)
-        return output
-    
 
 class ConvModel2(nn.Module):
     def __init__(self):
@@ -90,6 +71,54 @@ class ConvModel2(nn.Module):
         output = self.fc(output)
         return output
     
+
+class ConvModel2BN(nn.Module):
+    def __init__(self):
+        super(ConvModel2BN, self).__init__()
+
+        self.convnet = nn.Sequential(nn.Conv2d(1, 64, 3), 
+                                     nn.BatchNorm2d(num_features=64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU(),
+                                     nn.AvgPool2d(2, stride=(1, 1)),
+                                     nn.Conv2d(64, 128, 1), 
+                                     nn.BatchNorm2d(num_features=128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU(),
+                                     nn.AvgPool2d(2, stride=(1, 1)),
+                                     nn.Conv2d(128, 256, 3), 
+                                     nn.BatchNorm2d(num_features=256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True),
+                                     nn.PReLU()
+                                     )
+        
+        self.fc = self.fc = nn.Sequential(nn.Linear(1024, 512),
+                                nn.SiLU(),
+                                nn.Linear(512, 256),
+                                nn.SiLU(),
+                                nn.Linear(256, 128),
+                                nn.SiLU(),
+                                nn.Linear(128, 4),
+                                )
+    
+    def forward(self, x):
+        output = self.convnet(x)
+        output = output.view(output.size()[0], -1)
+        output = self.fc(output)
+        return output
+    
+class IRCNN(nn.Module):
+    def __init__(self):
+        super(IRCNN, self).__init__()
+        self.convnet = nn.Sequential(nn.Conv2d(1, 64, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(64, 64, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(64, 48, (1, 1), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(48, 32, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(32, 32, (5, 5), padding='same'), nn.LeakyReLU(),
+                                     nn.Conv2d(32, 1, (5, 5), padding='same'), nn.Sigmoid(),
+                                     )
+        
+    
+    def forward(self, x):
+        output = self.convnet(x)
+        return output
 
 
 class VGGSiameseNetwork(nn.Module):
