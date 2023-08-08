@@ -33,9 +33,11 @@ class MissingPixelDataset(Dataset):
         self.X, self.y = self.X.type(torch.float64), self.y.type(torch.float64)
 
     def __len__(self):
+        # calculate the length of the dataset
         return len(self.X)
     
     def __getitem__(self, idx):
+        # To get an item inside the dataset
         return self.X[idx], self.y[idx]
     
 

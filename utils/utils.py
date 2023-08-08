@@ -8,19 +8,23 @@ import matplotlib.pyplot as plt
 
 class PrepareDataset:
     def __init__(self, img_path, test_path, save_path, block_size, size = (256, 256)) -> None:
+        # Initializing the input variable for preparing the image dataset
         self.img_path = img_path
         self.save_path = save_path
         self.size = size
         self.block_size = block_size
         self.img_fnames = []
+        # Checking the file in folder and subfolder if there is image
         directories = next(os.walk(img_path), (None, None, []))[1]
         for directory in tqdm(directories):
             self.img_fnames.extend(next(os.walk(img_path + directory), (None, None, []))[2])
+        # Put all the path of test image in the variable
         self.test_path = test_path
         self.img_test_fnames = next(os.walk(test_path), (None, None, []))[2]
         
 
     def create_dataset_autoencoder(self):
+        # Creating dataset for autoencoder architecture
         for img_names in self.img_fnames:
             dir_name = img_names[:9]
             image = self._preprocess_image(join(self.img_path + dir_name, img_names))
@@ -35,6 +39,7 @@ class PrepareDataset:
         pass
 
     def create_test_original(self):
+        # Create test dataset for original architecture model
         i=0
         X = np.zeros((1024 * len(self.img_test_fnames), 8, 8))
         for img_names in tqdm(self.img_test_fnames):
@@ -48,6 +53,7 @@ class PrepareDataset:
         return X[~np.isnan(X)].reshape(-1, 60) / 255., y / 255.
 
     def create_test_2d(self):
+        # Create test dataset for CNN model
         i=0
         X = np.zeros((1024 * len(self.img_test_fnames), 8, 8))
         for img_names in tqdm(self.img_test_fnames):
@@ -61,6 +67,7 @@ class PrepareDataset:
         return X / 255., y / 255.
     
     def create_test_ircnn(self):
+        # Create test dataset for the IRCNN model
         i=0
         X = np.zeros((64 * len(self.img_test_fnames), 32, 32))
         y = np.zeros((64 * len(self.img_test_fnames), 32, 32))
@@ -78,6 +85,7 @@ class PrepareDataset:
     
     
     def test_model_pytorch(self, model):
+        # Creating a test function for the pytorch model
         image = self._preprocess_image('./dataset/original_image/balloon.bmp')
         tiled_image = self._reshape_split(image)
         X = tiled_image.copy()
@@ -89,6 +97,7 @@ class PrepareDataset:
         return X.reshape(32, 32, 8, 8).swapaxes(1, 2).reshape(256, 256)
 
     def create_dataset_original(self, sample_size):
+        # Create train  dataset for original architecture model
         i=0
         X = np.zeros((1024 * sample_size, 8, 8))
         for img_names in tqdm(self.img_fnames[:sample_size]):
@@ -103,6 +112,7 @@ class PrepareDataset:
         return X[~np.isnan(X)].reshape(-1, 60) / 255., y / 255.
     
     def create_dataset_2d(self, sample_size):
+        # Create train dataset for CNN architecture model
         i=0
         X = np.zeros((1024 * sample_size, 8, 8))
         for img_names in tqdm(self.img_fnames[:sample_size]):
@@ -117,6 +127,7 @@ class PrepareDataset:
         return X / 255., y / 255.
     
     def create_dataset_ircnn(self, sample_size):
+        # Create train dataset for IRCNN architecture model
         i=0
         X = np.zeros((64 * sample_size, 32, 32))
         y = np.zeros((64 * sample_size, 32, 32))
@@ -134,6 +145,7 @@ class PrepareDataset:
         return X / 255., y / 255.
     
     def _reshape_split(self, img):
+        # To make a image patches for simulating the missing pixels
         if img.ndim == 2:
             img_height, img_width = img.shape
             channels = 1
@@ -150,12 +162,14 @@ class PrepareDataset:
         return tiled_array.reshape(-1, tile_height, tile_width)
     
     def _preprocess_image(self, img_full_path):
+        # For preprocessing the image
         img = cv.imread(img_full_path, cv.IMREAD_GRAYSCALE)
         img = cv.resize(img, self.size, cv.INTER_LINEAR)
         img = img.astype(np.float64)
         return img
 
     def _create_missing_pixel_img(self, img):
+        # Function to create a missing pixel in the image
         temp_img = img.copy()
         for r in range(self.block_size - 4 - 1, img.shape[0], self.block_size):
             for c in range(self.block_size - 4 - 1, img.shape[1], self.block_size):
@@ -165,6 +179,7 @@ class PrepareDataset:
 
 
 def imshow(img, cmap=None, vmin=0, vmax=255, frameon=False, dpi=72):
+    # Function to show the image in matplotlib
     fig = plt.figure(figsize=[img.shape[1]/dpi, img.shape[0]/dpi], \
                     frameon=frameon)
     ax = fig.add_axes([0, 0, 1, 1])

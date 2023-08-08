@@ -4,6 +4,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class OriginalModel(nn.Module):
+    """The original model from Professor Chandler architecture for
+    the base estimator
+    """
     def __init__(self):
         super(OriginalModel, self).__init__()
 
@@ -17,6 +20,9 @@ class OriginalModel(nn.Module):
     
 
 class ConvModel1(nn.Module):
+    """The CNN first architecture for predicting the missing pixels in
+    the image
+    """
     def __init__(self):
         super(ConvModel1, self).__init__()
 
@@ -46,6 +52,9 @@ class ConvModel1(nn.Module):
     
 
 class ConvModel2(nn.Module):
+    """The CNN second architecture for predicting the missing pixels in
+    the image
+    """
     def __init__(self):
         super(ConvModel2, self).__init__()
 
